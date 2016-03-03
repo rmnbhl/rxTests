@@ -15,6 +15,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -39,8 +41,12 @@ public class MainActivity extends AppCompatActivity {
     private final Generator gen2 = new Generator();
     private final Generator gen3 = new Generator();
     private final Context context = this;
-    private ToggleButton but1, but2, but3;
-    private TextView tv1, tv2, tv3;
+    protected @InjectView(R.id.but1)ToggleButton but1;
+    protected @InjectView(R.id.but2)ToggleButton but2;
+    protected @InjectView(R.id.but3)ToggleButton but3;
+    protected @InjectView(R.id.one)TextView tv1;
+    protected @InjectView(R.id.two)TextView tv2;
+    protected @InjectView(R.id.three)TextView tv3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        findViewsById();
+        ButterKnife.inject(this);
         initButtons();
         setSubscribers();
 
@@ -116,16 +122,6 @@ public class MainActivity extends AppCompatActivity {
         this.but1.setChecked(true);
         this.but2.setChecked(true);
         this.but3.setChecked(true);
-    }
-
-    private void findViewsById() {
-        this.but1 = (ToggleButton) findViewById(R.id.but1);
-        this.but2 = (ToggleButton) findViewById(R.id.but2);
-        this.but3 = (ToggleButton) findViewById(R.id.but3);
-
-        this.tv1 = (TextView) findViewById(R.id.one);
-        this.tv2 = (TextView) findViewById(R.id.two);
-        this.tv3 = (TextView) findViewById(R.id.three);
     }
 
     @Override
