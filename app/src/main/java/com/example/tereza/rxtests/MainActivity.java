@@ -17,10 +17,13 @@ import android.widget.ToggleButton;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import butterknife.OnClick;
 import rx.Observable;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 // asynctask - MIE                   - RxJava alebo aj blby Thread
@@ -41,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private final Generator gen2 = new Generator();
     private final Generator gen3 = new Generator();
     private final Context context = this;
+
     protected @InjectView(R.id.but1)ToggleButton but1;
     protected @InjectView(R.id.but2)ToggleButton but2;
     protected @InjectView(R.id.but3)ToggleButton but3;
@@ -68,14 +72,23 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+//    @OnClick(R.id.)
+
     private void setSubscribers() {
-        subscribeToObservable(getObserverOfGen(gen1, but1, 100), tv1);
-        subscribeToObservable(getObserverOfGen(gen2, but2, 1000), tv2);
-        subscribeToObservable(getObserverOfGen(gen3, but3, 10000), tv3);
+        subscribeToObservable(getObserverOfGen(gen1, but1, 100), tv1, but1);
+        subscribeToObservable(getObserverOfGen(gen2, but2, 1000), tv2, but2);
+        subscribeToObservable(getObserverOfGen(gen3, but3, 10000), tv3, but3);
     }
 
-    private void subscribeToObservable(Observable o, final TextView tv) {
-        o.subscribeOn(Schedulers.newThread()) // Create a new Thread
+    private void subscribeToObservable(Observable<String> o, final TextView tv, final ToggleButton tb) {
+        o
+                .filter(new Func1<String, Boolean>() {
+                    @Override
+                    public Boolean call(String s) {
+                        return tb.isChecked();
+                    }
+                })
+                .subscribeOn(Schedulers.newThread()) // Create a new Thread
                 .observeOn(AndroidSchedulers.mainThread()) // Use the UI thread
                 .subscribe(new Action1<String>() {
                     @Override
@@ -85,16 +98,17 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private Observable getObserverOfGen(final Generator g, final ToggleButton tb, final int sleepTime) {
-        return Observable.create(new Observable.OnSubscribe<String>() {
+    private Observable<String> getObserverOfGen(final Generator g, final ToggleButton tb, final int sleepTime) {
+        return Observable
+                .create(new Observable.OnSubscribe<String>() {
             @Override
             public void call(Subscriber<? super String> subscriber) {
                 try {
-                    while(tb.isChecked()) {
+                    while(true) {
                         Thread.sleep(sleepTime);
                         subscriber.onNext(String.valueOf(g.getIntFromInterval(1, 10)));
                     }
-                    subscriber.onCompleted();
+//                    subscriber.onCompleted();
                 } catch (Exception e) {
                     subscriber.onError(e); // In case there are network errors
                 }
